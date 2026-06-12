@@ -11,26 +11,91 @@ os.environ["LD_LIBRARY_PATH"] = "/home/.../GMAT/R2026a/lib"
 import load_gmat  # type: ignore # noqa: E402
 import gmatpy as gmat  # type: ignore # noqa: E402
 
-gmat.Setup("")
-print("GMAT Engine Initialized Successfully!")
-
 # Example TLE data for a satellite (replace with actual TLE data)
-TLE1 = "1 45568U 20025AP  26152.73507564  .09883348  12554-4  24468-3 0  9991"
-TLE2 = "2 45568  53.0178 328.0597 0007364 287.1114  72.9127 16.45563244339443"
+line1 = "1 45568U 20025AP  26152.73507564  .09883348  12554-4  24468-3 0  9991"
+line2 = "2 45568  53.0178 328.0597 0007364 287.1114  72.9127 16.45563244339443"
 
-satellite = Satrec.twoline2rv(TLE1, TLE2)
+TLE = Satrec.twoline2rv(line1, line2)
 
-jd = satellite.jdsatepoch
-fr = satellite.jdsatepochF
+jd = TLE.jdsatepoch
+fr = TLE.jdsatepochF
 
 # Julian Dates
-print(f"Julian Date: {(jd + fr)}")
-print(f"Modded Julian Date: {(jd + fr) - 2400000.5}")
-print(f"GMAT Modified Julian Date: {(jd + fr) - 2430000}")
+jdate = jd+fr
+mod_jdate = jdate - 2400000.5
+gmat_mod_jdate = jdate - 2430000
 
-error, position, velocity = satellite.sgp4(jd, fr)
+print(f"Julian Date: {jdate}")
+print(f"Modded Julian Date: {mod_jdate}")
+print(f"GMAT Modified Julian Date: {gmat_mod_jdate}")
+
+error, position, velocity = TLE.sgp4(jd, fr)
 
 # Position and velocity vectors in the TEME frame (km and km/s)
 print(f"Error code: {error}")
 print(f"Position (km): {position}")
 print(f"Velocity (km/s): {velocity}")
+print(f"B_Star: {TLE.bstar}")
+
+#########################
+# GMAT reentry analysis #
+#########################
+
+# Spacecraft
+gmat.Setup("")
+mod = gmat.Moderator.Instance()
+sat = mod.CreateSpacecraft("Spacecraft", "Satellite")
+sat.SetField("DateFormat", "UTCModJulian")
+sat.SetField("Epoch", str(gmat_mod_jdate))
+sat.SetField("CoordinateSystem", "TEME")
+sat.SetField("X", position[0])
+sat.SetField("Y", position[1])
+sat.SetField("Z", position[2])
+sat.SetField("VX", velocity[0])
+sat.SetField("VY", velocity[1])
+sat.SetField("VZ", velocity[2])
+sat.SetField("DryMass", 450)
+sat.SetField("Cd", 2.2)
+sat.SetField("Cr", 1.8)
+sat.SetField("DragArea", 3)
+sat.SetField("SRPArea", 3)
+sat.SetField("SPADDragScaleFactor", 1)
+sat.SetField("SPADSRPScaleFactor", 1)
+sat.SetField("AtmosDensityScaleFactor", 1)
+sat.SetField("ExtendedMassPropertiesModel", "None")
+sat.SetField("NAIFId", -10000001)
+sat.SetField("NAIFIdReferenceFrame", -9000001)
+sat.SetField("OrbitColor", "Red")
+sat.SetField("TargetColor", "Teal")
+sat.SetField("OrbitErrorCovariance",  (1e+70, 0, 0, 0, 0, 0,
+                                       0, 1e+70, 0, 0, 0, 0,
+                                       0, 0, 1e+70, 0, 0, 0,
+                                       0, 0, 0, 1e+70, 0, 0,
+                                       0, 0, 0, 0, 1e+70, 0,
+                                       0, 0, 0, 0, 0, 1e+70))
+sat.SetField("CdSigma", 1e+70)
+sat.SetField("CrSigma", 1e+70)
+sat.SetField("Id", 'SatId')
+sat.SetField("Attitude", "CoordinateSystemFixed")
+sat.SetField("SPADSRPInterpolationMethod", "Bilinear")
+sat.SetField("SPADSRPScaleFactorSigma", 1e+70)
+sat.SetField("SPADDragInterpolationMethod", "Bilinear")
+sat.SetField("SPADDragScaleFactorSigma", 1e+70)
+sat.SetField("AtmosDensityScaleFactorSigma", 1e+70)
+sat.SetField("ModelFile", "aura.3ds")
+sat.SetField("ModelOffsetX", 0)
+sat.SetField("ModelOffsetY", 0)
+sat.SetField("ModelOffsetZ", 0)
+sat.SetField("ModelRotationX", 0)
+sat.SetField("ModelRotationY", 0)
+sat.SetField("ModelRotationZ", 0)
+sat.SetField("ModelScale", 1)
+sat.SetField("AttitudeDisplayStateType", "Quaternion")
+sat.SetField("AttitudeRateDisplayStateType", "AngularVelocity")
+sat.SetField("AttitudeCoordinateSystem", "EarthMJ2000Eq")
+sat.SetField("EulerAngleSequence", "321")
+
+# ForceModels
+
+
+# Propagators
