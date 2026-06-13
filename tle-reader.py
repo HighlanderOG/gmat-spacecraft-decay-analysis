@@ -14,8 +14,14 @@ import gmatpy as gmat  # type: ignore # noqa: E402
 # Example TLE data for a satellite (replace with actual TLE data)
 line1 = "1 45568U 20025AP  26152.73507564  .09883348  12554-4  24468-3 0  9991"
 line2 = "2 45568  53.0178 328.0597 0007364 287.1114  72.9127 16.45563244339443"
-
 TLE = Satrec.twoline2rv(line1, line2)
+
+# Other satellite parameters
+drag_coefficient = 2.2
+dry_mass = 450  # kg
+rho = 1e-12  # kg/m^3, very low density for high altitude
+# m^2, using the bstar parameter to estimate the area
+area = TLE.bstar * (2 * dry_mass) / (drag_coefficient * 0.15696615)
 
 jd = TLE.jdsatepoch
 fr = TLE.jdsatepochF
@@ -35,16 +41,14 @@ error, position, velocity = TLE.sgp4(jd, fr)
 print(f"Error code: {error}")
 print(f"Position (km): {position}")
 print(f"Velocity (km/s): {velocity}")
-print(f"B_Star: {TLE.bstar}")
 
 #########################
 # GMAT reentry analysis #
 #########################
-
-# Spacecraft
 gmat.Setup("")
-mod = gmat.Moderator.Instance()
-sat = mod.CreateSpacecraft("Spacecraft", "Satellite")
+
+# Spacecraft (units in km/kg)
+sat = gmat.Construct("Spacecraft", "Satellite")
 sat.SetField("DateFormat", "UTCModJulian")
 sat.SetField("Epoch", str(gmat_mod_jdate))
 sat.SetField("CoordinateSystem", "TEME")
@@ -54,11 +58,11 @@ sat.SetField("Z", position[2])
 sat.SetField("VX", velocity[0])
 sat.SetField("VY", velocity[1])
 sat.SetField("VZ", velocity[2])
-sat.SetField("DryMass", 450)
-sat.SetField("Cd", 2.2)
+sat.SetField("DryMass", dry_mass)
+sat.SetField("Cd", drag_coefficient)
 sat.SetField("Cr", 1.8)
-sat.SetField("DragArea", 3)
-sat.SetField("SRPArea", 3)
+sat.SetField("DragArea", area)
+sat.SetField("SRPArea", area)
 sat.SetField("SPADDragScaleFactor", 1)
 sat.SetField("SPADSRPScaleFactor", 1)
 sat.SetField("AtmosDensityScaleFactor", 1)
@@ -96,6 +100,35 @@ sat.SetField("AttitudeCoordinateSystem", "EarthMJ2000Eq")
 sat.SetField("EulerAngleSequence", "321")
 
 # ForceModels
+sat_force_model = gmat.Construct("ForceModel", "SatPropagator_ForceModel")
+sat_force_model.SetField("CentralBody", "Earth")
+
+earth_gravity = gmat.Construct("GravityField", "Earth10x10")
+earth_gravity.SetField("BodyName", "Earth")
+earth_gravity.SetField(
+    "PotentialFile", "/home/.../GMAT/R2026a/data/gravity/earth/JGM2.cof")
+earth_gravity.SetField("Degree", 10)
+earth_gravity.SetField("Order", 10)
+
+moon_gravity = gmat.Construct("GravityField", "MoonGravity")
+moon_gravity.SetField("BodyName", "Luna")
+sun_gravity = gmat.Construct("GravityField", "SunGravity")
+sun_gravity.SetField("BodyName", "Sun")
+
+drag_model = gmat.Construct("DragForce", "DragModel")
+drag_model.SetField("AtmosphereModel", "MSISE90")
+
+atmosphere = gmat.Construct("MSISE90", "Atmosphere")
+drag_model.SetReference(atmosphere)
+
+srp = gmat.Construct("SolarRadiationPressure", "SRPModel")
+
+sat_force_model.AddForce(earth_gravity)
+sat_force_model.AddForce(moon_gravity)
+sat_force_model.AddForce(sun_gravity)
+sat_force_model.AddForce(drag_model)
+sat_force_model.AddForce(srp)
 
 
 # Propagators
+sat_propagator = gmat.Construct("Propagator", "SatPropagator")
