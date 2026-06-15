@@ -50,6 +50,7 @@ sat = gmat.Construct("Spacecraft", "Satellite")
 sat.SetField("DateFormat", "UTCModJulian")
 sat.SetField("Epoch", str(gmat_mod_jdate))
 sat.SetField("CoordinateSystem", "TEME")
+sat.SetField("DisplayStateType", "Cartesian")
 sat.SetField("X", position[0])
 sat.SetField("Y", position[1])
 sat.SetField("Z", position[2])
@@ -82,10 +83,10 @@ earth_gravity.SetField(
 earth_gravity.SetField("Degree", 10)
 earth_gravity.SetField("Order", 10)
 
-moon_gravity = gmat.Construct("GravityField", "MoonGravity")
+moon_gravity = gmat.Construct("PointMassForce", "MoonGravity")
 moon_gravity.SetField("BodyName", "Luna")
 
-sun_gravity = gmat.Construct("GravityField", "SunGravity")
+sun_gravity = gmat.Construct("PointMassForce", "SunGravity")
 sun_gravity.SetField("BodyName", "Sun")
 
 # Atmospheric Drag
@@ -117,6 +118,10 @@ sat_propagator.SetField("StopIfAccuracyIsViolated", True)
 
 # Coordinate System
 teme = gmat.Construct("CoordinateSystem", "TEME", "Earth", "TEME")
+
+# Propogation Command
+gmat.Command(
+    "Propagate", "'Prop 1 Day' SatPropagator(Satellite) {Satellite.ElapsedDays = 1}")
 
 # Simulation
 gmat.Initialize()
