@@ -62,12 +62,11 @@ sat.SetField("VZ", velocity[2])
 
 # Set ballistics
 sat.SetField("DryMass", dry_mass)
+sat.SetField("DragArea", area)
 sat.SetField("Cd", drag_coefficient)
 
 # Set Epoch
 sat.SetField("Epoch", str(gmat_mod_jdate))
-
-print(sat.GetField("X"))
 
 print("Running simulation...")
 success = gmat.RunScript()
@@ -77,21 +76,15 @@ else:
     print("Simulation failed or ended prematurely: error or accuracy violation occurred.")
 
 # Final position
-x_obj = gmat.GetRuntimeObject("Satellite.TEME.X")
-x = x_obj.GetRealParameter("Value")
-y_obj = gmat.GetRuntimeObject("Satellite.TEME.Y")
-y = y_obj.GetRealParameter("Value")
-z_obj = gmat.GetRuntimeObject("Satellite.TEME.Z")
-z = z_obj.GetRealParameter("Value")
+x = gmat.GetRuntimeObject("Satellite.TEME.X").GetRealParameter("Value")
+y = gmat.GetRuntimeObject("Satellite.TEME.Y").GetRealParameter("Value")
+z = gmat.GetRuntimeObject("Satellite.TEME.Z").GetRealParameter("Value")
 final_position = (x, y, z)
 
 # Final velocity
-vx_obj = gmat.GetRuntimeObject("Satellite.TEME.VX")
-vx = vx_obj.GetRealParameter("Value")
-vy_obj = gmat.GetRuntimeObject("Satellite.TEME.VY")
-vy = vy_obj.GetRealParameter("Value")
-vz_obj = gmat.GetRuntimeObject("Satellite.TEME.VZ")
-vz = vz_obj.GetRealParameter("Value")
+vx = gmat.GetRuntimeObject("Satellite.TEME.VX").GetRealParameter("Value")
+vy = gmat.GetRuntimeObject("Satellite.TEME.VY").GetRealParameter("Value")
+vz = gmat.GetRuntimeObject("Satellite.TEME.VZ").GetRealParameter("Value")
 final_velocity = (vx, vy, vz)
 
 print(f"Final Position (km): {final_position}")
