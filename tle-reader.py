@@ -6,6 +6,7 @@ import sys
 sys.path.append("/home/.../GMAT/R2026a/api")
 sys.path.append("/home/.../GMAT/R2026a/bin")
 os.environ["LD_LIBRARY_PATH"] = "/home/.../GMAT/R2026a/lib"
+script = "/home/.../gmat-spacecraft-decay-analysis/reentry-analysis.script"
 
 # GMAT API imports
 import load_gmat  # type: ignore # noqa: E402
@@ -40,90 +41,58 @@ print(f"Error code: {error}")
 print(f"Position (km): {position}")
 print(f"Velocity (km/s): {velocity}")
 
-#########################
-# GMAT reentry analysis #
-#########################
+# GMAT reentry analysis
 gmat.Setup("")
 
-# Spacecraft (units in km/kg)
-sat = gmat.Construct("Spacecraft", "Satellite")
-sat.SetField("DateFormat", "UTCModJulian")
-sat.SetField("Epoch", str(gmat_mod_jdate))
-sat.SetField("CoordinateSystem", "TEME")
-sat.SetField("DisplayStateType", "Cartesian")
+gmat.LoadScript(script)
+gmat.Initialize()
+
+gmat.ShowObjects()
+sat = gmat.GetObject("Satellite")
+
+# Set position
 sat.SetField("X", position[0])
 sat.SetField("Y", position[1])
 sat.SetField("Z", position[2])
+
+# Set velocity
 sat.SetField("VX", velocity[0])
 sat.SetField("VY", velocity[1])
 sat.SetField("VZ", velocity[2])
+
+# Set ballistics
 sat.SetField("DryMass", dry_mass)
 sat.SetField("Cd", drag_coefficient)
-sat.SetField("Cr", 1.8)
-sat.SetField("DragArea", area)
-sat.SetField("SRPArea", area)
-sat.SetField("Id", 'SatId')
-sat.SetField("Attitude", "CoordinateSystemFixed")
-sat.SetField("OrbitErrorCovariance",  (1e+70, 0, 0, 0, 0, 0,
-                                       0, 1e+70, 0, 0, 0, 0,
-                                       0, 0, 1e+70, 0, 0, 0,
-                                       0, 0, 0, 1e+70, 0, 0,
-                                       0, 0, 0, 0, 1e+70, 0,
-                                       0, 0, 0, 0, 0, 1e+70))
 
-# ForceModel
-sat_force_model = gmat.Construct("ForceModel", "SatPropagator_ForceModel")
-sat_force_model.SetField("CentralBody", "Earth")
+# Set Epoch
+sat.SetField("Epoch", str(gmat_mod_jdate))
 
-# Gravity Fields
-earth_gravity = gmat.Construct("GravityField", "Earth10x10")
-earth_gravity.SetField("BodyName", "Earth")
-earth_gravity.SetField(
-    "PotentialFile", "/home/.../GMAT/R2026a/data/gravity/earth/JGM2.cof")
-earth_gravity.SetField("Degree", 10)
-earth_gravity.SetField("Order", 10)
+print(sat.GetField("X"))
 
-moon_gravity = gmat.Construct("PointMassForce", "MoonGravity")
-moon_gravity.SetField("BodyName", "Luna")
+print("Running simulation...")
+success = gmat.RunScript()
+if success:
+    print("Simulation complete!")
+else:
+    print("Simulation failed or ended prematurely: error or accuracy violation occurred.")
 
-sun_gravity = gmat.Construct("PointMassForce", "SunGravity")
-sun_gravity.SetField("BodyName", "Sun")
+# Final position
+x_obj = gmat.GetRuntimeObject("Satellite.TEME.X")
+x = x_obj.GetRealParameter("Value")
+y_obj = gmat.GetRuntimeObject("Satellite.TEME.Y")
+y = y_obj.GetRealParameter("Value")
+z_obj = gmat.GetRuntimeObject("Satellite.TEME.Z")
+z = z_obj.GetRealParameter("Value")
+final_position = (x, y, z)
 
-# Atmospheric Drag
-drag_model = gmat.Construct("DragForce", "DragModel")
-drag_model.SetField("AtmosphereModel", "MSISE90")
-atmosphere = gmat.Construct("MSISE90", "Atmosphere")
-drag_model.SetReference(atmosphere)
+# Final velocity
+vx_obj = gmat.GetRuntimeObject("Satellite.TEME.VX")
+vx = vx_obj.GetRealParameter("Value")
+vy_obj = gmat.GetRuntimeObject("Satellite.TEME.VY")
+vy = vy_obj.GetRealParameter("Value")
+vz_obj = gmat.GetRuntimeObject("Satellite.TEME.VZ")
+vz = vz_obj.GetRealParameter("Value")
+final_velocity = (vx, vy, vz)
 
-# Solar Radiation Pressure
-srp = gmat.Construct("SolarRadiationPressure", "SRPModel")
-
-# Add forces to the force model
-sat_force_model.AddForce(earth_gravity)
-sat_force_model.AddForce(moon_gravity)
-sat_force_model.AddForce(sun_gravity)
-sat_force_model.AddForce(drag_model)
-sat_force_model.AddForce(srp)
-
-# Propagator
-sat_propagator = gmat.Construct("Propagator", "SatPropagator")
-sat_propagator.SetField("FM", "SatPropagator_ForceModel")
-sat_propagator.SetField("Type", "Runge-Kutta89")
-sat_propagator.SetField("InitialStepSize", 60)
-sat_propagator.SetField("MinStep", 0.001)
-sat_propagator.SetField("MaxStep", 2700)
-sat_propagator.SetField("MaxStepAttempts", 50)
-sat_propagator.SetField("Accuracy", 9.999999999999999e-12)
-sat_propagator.SetField("StopIfAccuracyIsViolated", True)
-
-# Coordinate System
-teme = gmat.Construct("CoordinateSystem", "TEME", "Earth", "TEME")
-
-# Propogation Command
-gmat.Command(
-    "Propagate", "'Prop 1 Day' SatPropagator(Satellite) {Satellite.ElapsedDays = 1}")
-
-# Simulation
-gmat.Initialize()
-status = gmat.Execute()
-print(status)
+print(f"Final Position (km): {final_position}")
+print(f"Final Velocity (km/s): {final_velocity}")

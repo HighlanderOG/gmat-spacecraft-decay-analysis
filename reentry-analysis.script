@@ -1,0 +1,139 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2026-06-10 15:33:19
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft Satellite;
+Satellite.DateFormat = UTCModJulian;
+Satellite.Epoch = '6616';
+Satellite.CoordinateSystem = TEME;
+Satellite.DisplayStateType = Cartesian;
+Satellite.X = 5540.251674831488;
+Satellite.Y = -3453.917522558531;
+Satellite.Z = -0.006292326234227374;
+Satellite.VX = 2.485459466526605;
+Satellite.VY = 3.989904681770211;
+Satellite.VZ = 6.246949329807427;
+Satellite.DryMass = 450;
+Satellite.Cd = 2.2;
+Satellite.Cr = 1.8;
+Satellite.DragArea = 3;
+Satellite.SRPArea = 1;
+Satellite.SPADDragScaleFactor = 1;
+Satellite.SPADSRPScaleFactor = 1;
+Satellite.AtmosDensityScaleFactor = 1;
+Satellite.ExtendedMassPropertiesModel = 'None';
+Satellite.NAIFId = -10000001;
+Satellite.NAIFIdReferenceFrame = -9000001;
+Satellite.OrbitColor = Red;
+Satellite.TargetColor = Teal;
+Satellite.OrbitErrorCovariance = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+Satellite.CdSigma = 1e+70;
+Satellite.CrSigma = 1e+70;
+Satellite.Id = 'SatId';
+Satellite.Attitude = CoordinateSystemFixed;
+Satellite.SPADSRPInterpolationMethod = Bilinear;
+Satellite.SPADSRPScaleFactorSigma = 1e+70;
+Satellite.SPADDragInterpolationMethod = Bilinear;
+Satellite.SPADDragScaleFactorSigma = 1e+70;
+Satellite.AtmosDensityScaleFactorSigma = 1e+70;
+Satellite.ModelFile = 'aura.3ds';
+Satellite.ModelOffsetX = 0;
+Satellite.ModelOffsetY = 0;
+Satellite.ModelOffsetZ = 0;
+Satellite.ModelRotationX = 0;
+Satellite.ModelRotationY = 0;
+Satellite.ModelRotationZ = 0;
+Satellite.ModelScale = 1;
+Satellite.AttitudeDisplayStateType = 'Quaternion';
+Satellite.AttitudeRateDisplayStateType = 'AngularVelocity';
+Satellite.AttitudeCoordinateSystem = EarthMJ2000Eq;
+Satellite.EulerAngleSequence = '321';
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel SatPropagator_ForceModel;
+SatPropagator_ForceModel.CentralBody = Earth;
+SatPropagator_ForceModel.PrimaryBodies = {Earth};
+SatPropagator_ForceModel.PointMasses = {Luna};
+SatPropagator_ForceModel.SRP = On;
+SatPropagator_ForceModel.RelativisticCorrection = Off;
+SatPropagator_ForceModel.ErrorControl = RSSStep;
+SatPropagator_ForceModel.GravityField.Earth.Degree = 10;
+SatPropagator_ForceModel.GravityField.Earth.Order = 10;
+SatPropagator_ForceModel.GravityField.Earth.StmLimit = 100;
+SatPropagator_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+SatPropagator_ForceModel.GravityField.Earth.TideModel = 'None';
+SatPropagator_ForceModel.SRP.Flux = 1367;
+SatPropagator_ForceModel.SRP.SRPModel = Spherical;
+SatPropagator_ForceModel.SRP.Nominal_Sun = 149597870.691;
+SatPropagator_ForceModel.Drag.AtmosphereModel = MSISE90;
+SatPropagator_ForceModel.Drag.HistoricWeatherSource = 'ConstantFluxAndGeoMag';
+SatPropagator_ForceModel.Drag.PredictedWeatherSource = 'ConstantFluxAndGeoMag';
+SatPropagator_ForceModel.Drag.CSSISpaceWeatherFile = 'SpaceWeather-All-v1.2.txt';
+SatPropagator_ForceModel.Drag.SchattenFile = 'SchattenPredict.txt';
+SatPropagator_ForceModel.Drag.F107 = 150;
+SatPropagator_ForceModel.Drag.F107A = 150;
+SatPropagator_ForceModel.Drag.MagneticIndex = 3;
+SatPropagator_ForceModel.Drag.SchattenErrorModel = 'Nominal';
+SatPropagator_ForceModel.Drag.SchattenTimingModel = 'NominalCycle';
+SatPropagator_ForceModel.Drag.DragModel = 'Spherical';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator SatPropagator;
+SatPropagator.FM = SatPropagator_ForceModel;
+SatPropagator.Type = RungeKutta89;
+SatPropagator.InitialStepSize = 60;
+SatPropagator.Accuracy = 9.999999999999999e-12;
+SatPropagator.MinStep = 0.001;
+SatPropagator.MaxStep = 2700;
+SatPropagator.MaxStepAttempts = 50;
+SatPropagator.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem TEME;
+TEME.Origin = Earth;
+TEME.Axes = TEME;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create ReportFile ReportFile1;
+ReportFile1.SolverIterations = Current;
+ReportFile1.UpperLeft = [ 0 0 ];
+ReportFile1.Size = [ 0 0 ];
+ReportFile1.RelativeZOrder = 0;
+ReportFile1.Maximized = false;
+ReportFile1.Filename = 'ReportFile1.txt';
+ReportFile1.Precision = 16;
+ReportFile1.Add = {Satellite.TEME.X, Satellite.TEME.Y, Satellite.TEME.Z, Satellite.ElapsedSecs, Satellite.Earth.Altitude, Satellite.ElapsedDays, Satellite.TEME.VX, Satellite.TEME.VY, Satellite.TEME.VZ};
+ReportFile1.WriteHeaders = true;
+ReportFile1.LeftJustify = On;
+ReportFile1.ZeroFill = Off;
+ReportFile1.FixedWidth = true;
+ReportFile1.Delimiter = ' ';
+ReportFile1.ColumnWidth = 23;
+ReportFile1.WriteReport = true;
+ReportFile1.AppendToExistingFile = false;
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+While 'WhileAboveKarmanLine' Satellite.Earth.Altitude > 100
+   Propagate 'PropHundredSec' SatPropagator(Satellite) {Satellite.ElapsedSecs = 100};
+EndWhile;
