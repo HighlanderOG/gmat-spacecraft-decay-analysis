@@ -111,23 +111,23 @@ TEME.Axes = TEME;
 %---------- Subscribers
 %----------------------------------------
 
-Create ReportFile ReportFile1;
-ReportFile1.SolverIterations = Current;
-ReportFile1.UpperLeft = [ 0 0 ];
-ReportFile1.Size = [ 0 0 ];
-ReportFile1.RelativeZOrder = 0;
-ReportFile1.Maximized = false;
-ReportFile1.Filename = 'ReportFile1.txt';
-ReportFile1.Precision = 16;
-ReportFile1.Add = {Satellite.TEME.X, Satellite.TEME.Y, Satellite.TEME.Z, Satellite.ElapsedSecs, Satellite.Earth.Altitude, Satellite.ElapsedDays, Satellite.TEME.VX, Satellite.TEME.VY, Satellite.TEME.VZ};
-ReportFile1.WriteHeaders = true;
-ReportFile1.LeftJustify = On;
-ReportFile1.ZeroFill = Off;
-ReportFile1.FixedWidth = true;
-ReportFile1.Delimiter = ' ';
-ReportFile1.ColumnWidth = 23;
-ReportFile1.WriteReport = true;
-ReportFile1.AppendToExistingFile = false;
+Create ReportFile DecayAnalysisReportFile;
+DecayAnalysisReportFile.SolverIterations = Current;
+DecayAnalysisReportFile.UpperLeft = [ 0 0 ];
+DecayAnalysisReportFile.Size = [ 0 0 ];
+DecayAnalysisReportFile.RelativeZOrder = 0;
+DecayAnalysisReportFile.Maximized = false;
+DecayAnalysisReportFile.Filename = 'ReportFile1.txt';
+DecayAnalysisReportFile.Precision = 16;
+DecayAnalysisReportFile.Add = {Satellite.TEME.X, Satellite.TEME.Y, Satellite.TEME.Z, Satellite.ElapsedSecs, Satellite.Earth.Altitude, Satellite.ElapsedDays};
+DecayAnalysisReportFile.WriteHeaders = true;
+DecayAnalysisReportFile.LeftJustify = On;
+DecayAnalysisReportFile.ZeroFill = Off;
+DecayAnalysisReportFile.FixedWidth = true;
+DecayAnalysisReportFile.Delimiter = ' ';
+DecayAnalysisReportFile.ColumnWidth = 23;
+DecayAnalysisReportFile.WriteReport = true;
+DecayAnalysisReportFile.AppendToExistingFile = false;
 
 %----------------------------------------
 %---------- Mission Sequence

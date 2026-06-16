@@ -2,11 +2,12 @@ from sgp4.api import Satrec, jday
 import os
 import sys
 
-# GMAT placeholder paths (enter the actual paths to your GMAT installation)
+# Placeholder paths (enter the actual paths to your GMAT installation and script)
 sys.path.append("/home/.../GMAT/R2026a/api")
 sys.path.append("/home/.../GMAT/R2026a/bin")
 os.environ["LD_LIBRARY_PATH"] = "/home/.../GMAT/R2026a/lib"
 script = "/home/.../gmat-spacecraft-decay-analysis/reentry-analysis.script"
+report_file = "/home/.../GMAT/R2026a/output/DecayAnalysisReportFile.txt"
 
 # GMAT API imports
 import load_gmat  # type: ignore # noqa: E402
