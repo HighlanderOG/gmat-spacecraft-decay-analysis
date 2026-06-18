@@ -14,13 +14,13 @@ import load_gmat  # type: ignore # noqa: E402
 import gmatpy as gmat  # type: ignore # noqa: E402
 
 # Example TLE data for a satellite (replace with actual TLE data)
-line1 = "1 45568U 20025AP  26152.73507564  .09883348  12554-4  24468-3 0  9991"
-line2 = "2 45568  53.0178 328.0597 0007364 287.1114  72.9127 16.45563244339443"
+line1 = "1 46326U 20062B   26166.58087730  .06741012  12281-4  80525-3 0  9992"
+line2 = "2 46326  53.0183 198.6201 0007139 294.2691  65.7607 16.35644660320448"
 TLE = Satrec.twoline2rv(line1, line2)
 
 # Other satellite parameters
 drag_coefficient = 2.2
-dry_mass = 450  # kg
+dry_mass = 248  # kg
 area = TLE.bstar * (2 * dry_mass) / (drag_coefficient * 0.15696615)  # m^2
 
 jd = TLE.jdsatepoch
@@ -41,6 +41,7 @@ error, position, velocity = TLE.sgp4(jd, fr)
 print(f"Error code: {error}")
 print(f"Position (km): {position}")
 print(f"Velocity (km/s): {velocity}")
+print(f"Drag area (m^2): {area}")
 
 # GMAT reentry analysis
 gmat.Setup("")
@@ -75,6 +76,7 @@ if success:
     print("Simulation complete!")
 else:
     print("Simulation failed or ended prematurely: error or accuracy violation occurred.")
+print(f"Report file has been added/updated in {report_file}")
 
 # Final position
 x = gmat.GetRuntimeObject("Satellite.TEME.X").GetRealParameter("Value")
