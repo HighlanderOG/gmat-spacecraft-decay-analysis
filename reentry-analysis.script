@@ -13,10 +13,10 @@ Satellite.CoordinateSystem = TEME;
 Satellite.DisplayStateType = Cartesian;
 Satellite.X = 5540.251674831488;
 Satellite.Y = -3453.917522558531;
-Satellite.Z = -0.006292326234287771;
+Satellite.Z = -0.006292326234348167;
 Satellite.VX = 2.485459466526605;
-Satellite.VY = 3.98990468177021;
-Satellite.VZ = 6.246949329807428;
+Satellite.VY = 3.989904681770209;
+Satellite.VZ = 6.24694932980743;
 Satellite.DryMass = 450;
 Satellite.Cd = 2.2;
 Satellite.Cr = 1.8;
@@ -52,8 +52,6 @@ Satellite.AttitudeDisplayStateType = 'Quaternion';
 Satellite.AttitudeRateDisplayStateType = 'AngularVelocity';
 Satellite.AttitudeCoordinateSystem = EarthMJ2000Eq;
 Satellite.EulerAngleSequence = '321';
-
-
 
 %----------------------------------------
 %---------- ForceModels
@@ -120,7 +118,7 @@ DecayAnalysisReportFile.RelativeZOrder = 0;
 DecayAnalysisReportFile.Maximized = false;
 DecayAnalysisReportFile.Filename = 'DecayAnalysisReportFile.txt';
 DecayAnalysisReportFile.Precision = 16;
-DecayAnalysisReportFile.Add = {Satellite.TEME.X, Satellite.TEME.Y, Satellite.TEME.Z, Satellite.TEME.VX, Satellite.TEME.VY, Satellite.TEME.VZ, Satellite.ElapsedSecs, Satellite.Earth.Altitude, Satellite.ElapsedDays};
+DecayAnalysisReportFile.Add = {Satellite.TEME.X, Satellite.TEME.Y, Satellite.TEME.Z, Satellite.TEME.VX, Satellite.TEME.VY, Satellite.TEME.VZ, Satellite.ElapsedSecs, Satellite.ElapsedDays, Satellite.Earth.SMA};
 DecayAnalysisReportFile.WriteHeaders = true;
 DecayAnalysisReportFile.LeftJustify = On;
 DecayAnalysisReportFile.ZeroFill = Off;
